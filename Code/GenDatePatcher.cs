@@ -146,11 +146,11 @@ namespace DayStretch
                 {
                     switch (ival)
                     {
-                        case 60000: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerDayInt); break;
-                        case 2500: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerHourInt); break;
-                        case 300000: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerTwelfthInt); break;
-                        case 900000: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerQuadrumInt); break;
-                        case 3600000: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerYearInt); break;
+                        case 60000: ReplaceWithCall(ci, m_TicksPerDayInt); break;
+                        case 2500: ReplaceWithCall(ci, m_TicksPerHourInt); break;
+                        case 300000: ReplaceWithCall(ci, m_TicksPerTwelfthInt); break;
+                        case 900000: ReplaceWithCall(ci, m_TicksPerQuadrumInt); break;
+                        case 3600000: ReplaceWithCall(ci, m_TicksPerYearInt); break;
                         default: break;
                     }
                     continue;
@@ -160,12 +160,12 @@ namespace DayStretch
                 {
                     switch (lval)
                     {
-                        case 60000L: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerDayLong); break;
-                        case 2500L: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerHourLong); break;
-                        case 300000L: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerTwelfthLong); break;
-                        case 900000L: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerQuadrumLong); break;
-                        case 3600000L: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerYearLong); break;
-                        case 36000000L: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerDecadeLong); break;
+                        case 60000L: ReplaceWithCall(ci, m_TicksPerDayLong); break;
+                        case 2500L: ReplaceWithCall(ci, m_TicksPerHourLong); break;
+                        case 300000L: ReplaceWithCall(ci, m_TicksPerTwelfthLong); break;
+                        case 900000L: ReplaceWithCall(ci, m_TicksPerQuadrumLong); break;
+                        case 3600000L: ReplaceWithCall(ci, m_TicksPerYearLong); break;
+                        case 36000000L: ReplaceWithCall(ci, m_TicksPerDecadeLong); break;
                         default: break;
                     }
                     continue;
@@ -173,17 +173,24 @@ namespace DayStretch
 
                 if ((ci.opcode == OpCodes.Ldc_R4) && ci.operand is float fval)
                 {
-                    if (Math.Abs(fval - 60000f) < 0.001f) codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerDayFloat);
-                    else if (Math.Abs(fval - 2500f) < 0.001f) codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerHourFloat);
-                    else if (Math.Abs(fval - 300000f) < 0.001f) codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerTwelfthFloat);
-                    else if (Math.Abs(fval - 900000f) < 0.001f) codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerQuadrumFloat);
-                    else if (Math.Abs(fval - 3600000f) < 0.001f) codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerYearFloat);
+                    if (Math.Abs(fval - 60000f) < 0.001f) ReplaceWithCall(ci, m_TicksPerDayFloat);
+                    else if (Math.Abs(fval - 2500f) < 0.001f) ReplaceWithCall(ci, m_TicksPerHourFloat);
+                    else if (Math.Abs(fval - 300000f) < 0.001f) ReplaceWithCall(ci, m_TicksPerTwelfthFloat);
+                    else if (Math.Abs(fval - 900000f) < 0.001f) ReplaceWithCall(ci, m_TicksPerQuadrumFloat);
+                    else if (Math.Abs(fval - 3600000f) < 0.001f) ReplaceWithCall(ci, m_TicksPerYearFloat);
                     continue;
                 }
             }
 
             return codes.AsEnumerable();
         }
+
+        static void ReplaceWithCall(CodeInstruction instruction, MethodInfo method)
+        {
+            instruction.opcode = OpCodes.Call;
+            instruction.operand = method;
+        }
+
         static IEnumerable<CodeInstruction> ReplaceReverseConstsTranspiler(IEnumerable<CodeInstruction> instructions, ILGenerator il)
         {
             var codes = new List<CodeInstruction>(instructions);
@@ -218,11 +225,11 @@ namespace DayStretch
                 {
                     switch (ival)
                     {
-                        case 60000: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerDayInt); break;
-                        case 2500: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerHourInt); break;
-                        case 300000: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerTwelfthInt); break;
-                        case 900000: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerQuadrumInt); break;
-                        case 3600000: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerYearInt); break;
+                        case 60000: ReplaceWithCall(ci, m_TicksPerDayInt); break;
+                        case 2500: ReplaceWithCall(ci, m_TicksPerHourInt); break;
+                        case 300000: ReplaceWithCall(ci, m_TicksPerTwelfthInt); break;
+                        case 900000: ReplaceWithCall(ci, m_TicksPerQuadrumInt); break;
+                        case 3600000: ReplaceWithCall(ci, m_TicksPerYearInt); break;
                         default: break;
                     }
                     continue;
@@ -232,12 +239,12 @@ namespace DayStretch
                 {
                     switch (lval)
                     {
-                        case 60000L: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerDayLong); break;
-                        case 2500L: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerHourLong); break;
-                        case 300000L: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerTwelfthLong); break;
-                        case 900000L: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerQuadrumLong); break;
-                        case 3600000L: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerYearLong); break;
-                        case 36000000L: codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerDecadeLong); break;
+                        case 60000L: ReplaceWithCall(ci, m_TicksPerDayLong); break;
+                        case 2500L: ReplaceWithCall(ci, m_TicksPerHourLong); break;
+                        case 300000L: ReplaceWithCall(ci, m_TicksPerTwelfthLong); break;
+                        case 900000L: ReplaceWithCall(ci, m_TicksPerQuadrumLong); break;
+                        case 3600000L: ReplaceWithCall(ci, m_TicksPerYearLong); break;
+                        case 36000000L: ReplaceWithCall(ci, m_TicksPerDecadeLong); break;
                         default: break;
                     }
                     continue;
@@ -245,11 +252,11 @@ namespace DayStretch
 
                 if ((ci.opcode == OpCodes.Ldc_R4) && ci.operand is float fval)
                 {
-                    if (Math.Abs(fval - 60000f) < 0.001f) codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerDayFloat);
-                    else if (Math.Abs(fval - 2500f) < 0.001f) codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerHourFloat);
-                    else if (Math.Abs(fval - 300000f) < 0.001f) codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerTwelfthFloat);
-                    else if (Math.Abs(fval - 900000f) < 0.001f) codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerQuadrumFloat);
-                    else if (Math.Abs(fval - 3600000f) < 0.001f) codes[i] = new CodeInstruction(OpCodes.Call, m_TicksPerYearFloat);
+                    if (Math.Abs(fval - 60000f) < 0.001f) ReplaceWithCall(ci, m_TicksPerDayFloat);
+                    else if (Math.Abs(fval - 2500f) < 0.001f) ReplaceWithCall(ci, m_TicksPerHourFloat);
+                    else if (Math.Abs(fval - 300000f) < 0.001f) ReplaceWithCall(ci, m_TicksPerTwelfthFloat);
+                    else if (Math.Abs(fval - 900000f) < 0.001f) ReplaceWithCall(ci, m_TicksPerQuadrumFloat);
+                    else if (Math.Abs(fval - 3600000f) < 0.001f) ReplaceWithCall(ci, m_TicksPerYearFloat);
                     continue;
                 }
             }
