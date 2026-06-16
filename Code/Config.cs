@@ -61,23 +61,76 @@ namespace DayStretch
             }
             if (listingStandard.ButtonText("Apply"))
             {
-                settings.TimeMultiplier = settings.FakeTimeMultiplier;
-                settings.WorkMultiplier = settings.FakeWorkMultiplier;
-                if (!settings.ShouldWorkFollow)
-                {
-                    settings.WorkMultiplier = settings.TimeMultiplier;
-                    Find.WindowStack.Add(new Dialog_MessageBox($"Game has to be restarted for the settings to load, new multiplier: {settings.FakeTimeMultiplier}"));
-                }
-                else
-                {
-                    Find.WindowStack.Add(new Dialog_MessageBox($"Game has to be restarted for the settings to load\nNew multipliers: (Global){settings.FakeTimeMultiplier}, (Work){settings.FakeWorkMultiplier}"));
-                }
-
-
+                ApplySettings();
             }
-            listingStandard.CheckboxLabeled("Should the popup telling you that the save time multiplier is mismatched stop appearing ", ref settings.StopShowing);
+            listingStandard.CheckboxLabeled("Hide save mismatch warning popups ", ref settings.StopShowing);
             listingStandard.End();
             base.DoSettingsWindowContents(inRect);
+        }
+        private void ApplySettings()
+        {
+            settings.TimeMultiplier = settings.FakeTimeMultiplier;
+            if (settings.ShouldWorkFollow)
+            {
+                settings.WorkMultiplier = settings.FakeWorkMultiplier;
+            }
+            else
+            {
+                settings.FakeWorkMultiplier = settings.TimeMultiplier;
+                settings.WorkMultiplier = settings.TimeMultiplier;
+            }
+
+            WriteSettings();
+
+            var comp = Current.Game?.GetComponent<DayStretchGameComp>();
+            if (comp != null && !comp.setupCompleted)
+            {
+                ShowNewColonySetupPrompt(comp);
+                return;
+            }
+
+            ShowAppliedRestartMessage(comp != null);
+        }
+        private void ShowNewColonySetupPrompt(DayStretchGameComp comp)
+        {
+            string text = $"DayStretch saved these settings immediately.\n{MultiplierSummary()}\n\n" +
+                          $"This setup step is intended for a newly started colony before real play.\n\n" +
+                          $"DayStretch will bind this save to day length multiplier {settings.TimeMultiplier:0.0}x.\n\n" +
+                          $"After confirming, save this colony, restart RimWorld, then continue playing.";
+
+            Find.WindowStack.Add(new Dialog_MessageBox(
+                text,
+                "Bind save", () =>
+                {
+                    comp.CompleteSetup(settings.TimeMultiplier);
+                    Find.WindowStack.Add(new Dialog_MessageBox("DayStretch setup is bound to this save. Save this colony now, restart RimWorld, then continue."));
+                },
+                "Not now", () =>
+                {
+                    Find.WindowStack.Add(new Dialog_MessageBox("Settings were saved globally, but this save was not bound to the new multiplier. Save mismatch warnings will remain available when this colony is loaded."));
+                }
+            ));
+        }
+        private void ShowAppliedRestartMessage(bool hasCurrentGame)
+        {
+            string text = $"DayStretch saved these settings immediately.\n{MultiplierSummary()}\n\n" +
+                          $"Restart RimWorld for the settings to load.";
+
+            if (hasCurrentGame)
+            {
+                text += "\n\nThis does not convert existing colonies. If this save was already played with another multiplier, DayStretch will keep the mismatch warning available on load.";
+            }
+
+            Find.WindowStack.Add(new Dialog_MessageBox(text));
+        }
+        private string MultiplierSummary()
+        {
+            if (settings.ShouldWorkFollow)
+            {
+                return $"New multipliers: day length {settings.TimeMultiplier:0.0}x, work {settings.WorkMultiplier:0.0}x.";
+            }
+
+            return $"New multiplier: day length and work {settings.TimeMultiplier:0.0}x.";
         }
         public override string SettingsCategory()
         {
