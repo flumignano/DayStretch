@@ -5,8 +5,11 @@ namespace DayStretch
 {
     public class DayStretchGameComp : GameComponent
     {
+        private const int NewColonySetupGraceTicks = DayConstants.VanillaTicksPerHour;
+
         public float savedTimeMultiplier = 1f;
         public bool setupCompleted = true;
+        public int setupStartTick = -1;
 
         public DayStretchGameComp(Game game) : base()
         {
@@ -16,17 +19,45 @@ namespace DayStretch
             base.StartedNewGame();
             savedTimeMultiplier = Settings.Instance.TimeMultiplier;
             setupCompleted = false;
+            setupStartTick = Find.TickManager.TicksGame;
         }
         public override void ExposeData()
         {
             base.ExposeData();
+            if (Scribe.mode == LoadSaveMode.Saving && !setupCompleted)
+            {
+                CloseNewColonySetupWindow();
+            }
+
             Scribe_Values.Look(ref savedTimeMultiplier, "DayStretched_SavedTimeMultiplier", 1f);
             Scribe_Values.Look(ref setupCompleted, "DayStretched_SetupCompleted", true);
+            Scribe_Values.Look(ref setupStartTick, "DayStretched_SetupStartTick", -1);
         }
-        public void CompleteSetup(float timeMultiplier)
+        public override void GameComponentTick()
         {
+            base.GameComponentTick();
+            CloseNewColonySetupWindowIfExpired();
+        }
+        public bool CanBindNewColonySetup()
+        {
+            CloseNewColonySetupWindowIfExpired();
+            return !setupCompleted;
+        }
+        public bool CompleteSetup(float timeMultiplier)
+        {
+            if (!CanBindNewColonySetup())
+            {
+                return false;
+            }
+
             savedTimeMultiplier = timeMultiplier;
             setupCompleted = true;
+            setupStartTick = -1;
+            return true;
+        }
+        public void CancelSetup()
+        {
+            CloseNewColonySetupWindow();
         }
         public static float ForCurrentSave()
         {
@@ -49,7 +80,12 @@ namespace DayStretch
         public override void LoadedGame()
         {
             base.LoadedGame();
-            if (savedTimeMultiplier != Settings.Instance.TimeMultiplier && Settings.Instance.StopShowing == false)
+            if (!setupCompleted)
+            {
+                CloseNewColonySetupWindow();
+            }
+
+            if (savedTimeMultiplier != Settings.Instance.TimeMultiplier)
             {
                 string text = $"The saved time multiplier for this save is {savedTimeMultiplier}.\n" +
                               $"Your current multiplier is {Settings.Instance.TimeMultiplier}.\n" +
@@ -88,6 +124,24 @@ namespace DayStretch
                     }
                 ));
             }
+        }
+        private void CloseNewColonySetupWindowIfExpired()
+        {
+            if (setupCompleted)
+            {
+                return;
+            }
+
+            int ticksGame = Find.TickManager.TicksGame;
+            if (setupStartTick < 0 || ticksGame > setupStartTick + NewColonySetupGraceTicks)
+            {
+                CloseNewColonySetupWindow();
+            }
+        }
+        private void CloseNewColonySetupWindow()
+        {
+            setupCompleted = true;
+            setupStartTick = -1;
         }
     }
 }

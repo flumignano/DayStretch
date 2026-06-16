@@ -63,7 +63,6 @@ namespace DayStretch
             {
                 ApplySettings();
             }
-            listingStandard.CheckboxLabeled("Hide save mismatch warning popups ", ref settings.StopShowing);
             listingStandard.End();
             base.DoSettingsWindowContents(inRect);
         }
@@ -83,7 +82,7 @@ namespace DayStretch
             WriteSettings();
 
             var comp = Current.Game?.GetComponent<DayStretchGameComp>();
-            if (comp != null && !comp.setupCompleted)
+            if (comp != null && comp.CanBindNewColonySetup())
             {
                 ShowNewColonySetupPrompt(comp);
                 return;
@@ -102,12 +101,19 @@ namespace DayStretch
                 text,
                 "Bind save", () =>
                 {
-                    comp.CompleteSetup(settings.TimeMultiplier);
-                    Find.WindowStack.Add(new Dialog_MessageBox("DayStretch setup is bound to this save. Save this colony now, restart RimWorld, then continue."));
+                    if (comp.CompleteSetup(settings.TimeMultiplier))
+                    {
+                        Find.WindowStack.Add(new Dialog_MessageBox("DayStretch setup is bound to this save. Save this colony now, restart RimWorld, then continue."));
+                    }
+                    else
+                    {
+                        Find.WindowStack.Add(new Dialog_MessageBox("This colony is no longer in the new-colony setup window. Restart RimWorld without saving, then load the colony and follow the save mismatch prompt."));
+                    }
                 },
                 "Not now", () =>
                 {
-                    Find.WindowStack.Add(new Dialog_MessageBox("Settings were saved globally, but this save was not bound to the new multiplier. Save mismatch warnings will remain available when this colony is loaded."));
+                    comp.CancelSetup();
+                    Find.WindowStack.Add(new Dialog_MessageBox("Settings were saved globally, but this save was not bound to the new multiplier. Restart RimWorld without saving, then load the colony and follow the save mismatch prompt."));
                 }
             ));
         }
@@ -118,7 +124,7 @@ namespace DayStretch
 
             if (hasCurrentGame)
             {
-                text += "\n\nThis does not convert existing colonies. If this save was already played with another multiplier, DayStretch will keep the mismatch warning available on load.";
+                text += "\n\nThis does not convert existing colonies. For an existing save, quit without saving and restart RimWorld. When the colony is loaded, DayStretch will warn if the save was already bound to another multiplier.";
             }
 
             Find.WindowStack.Add(new Dialog_MessageBox(text));
