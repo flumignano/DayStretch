@@ -325,7 +325,7 @@ namespace DayStretch
             targetNumbers.TryGetValue(dictKey, out List<double> values);
             bool reverse = false;
             double customModifier = 0; bool customModifierFilled = false;
-            if (values[0] == 1) { reverse = true; }
+            if (values[0] == -1) { reverse = true; }
             if (values[1] != 0) { customModifier = values[1]; customModifierFilled = true; } //TODO do customModifier, for now i cant be bothered
             int skipResults = (int)values[2];
             List<double> patchValues = values.Skip(3).ToList();
@@ -346,7 +346,7 @@ namespace DayStretch
             targetNumbers.TryGetValue(dictKey, out List<double> values);
             bool reverse = false;
             double customModifier = 0; bool customModifierFilled = false;
-            if (values[0] == 1) { reverse = true; }
+            if (values[0] == -1) { reverse = true; }
             if (values[1] != 0) { customModifier = values[1]; customModifierFilled = true; } //TODO do customModifier, for now i cant be bothered
             int skipResults = (int)values[2];
             List<double> patchValues = values.Skip(3).ToList();
@@ -368,7 +368,7 @@ namespace DayStretch
             targetNumbers.TryGetValue(dictKey, out List<double> values);
             bool reverse = false;
             double customModifier = 0; bool customModifierFilled = false;
-            if (values[0] == 1) { reverse = true; }
+            if (values[0] == -1) { reverse = true; }
             if (values[1] != 0) { customModifier = values[1]; customModifierFilled = true; } //TODO do customModifier, for now i cant be bothered
             int skipResults = (int)values[2];
             List<double> patchValues = values.Skip(3).ToList();
@@ -389,7 +389,7 @@ namespace DayStretch
             targetNumbers.TryGetValue(dictKey, out List<double> values);
             bool reverse = false;
             double customModifier = 0; bool customModifierFilled = false;
-            if (values[0] == 1) { reverse = true; }
+            if (values[0] == -1) { reverse = true; }
             if (values[1] != 0) { customModifier = values[1]; customModifierFilled = true; } //TODO do customModifier, for now i cant be bothered
             int skipResults = (int)values[2];
             List<double> patchValues = values.Skip(3).ToList();
