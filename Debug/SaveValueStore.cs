@@ -5,6 +5,9 @@ namespace DayStretch
 {
     public class DayStretchGameComp : GameComponent
     {
+        // Fresh colonies get a short one-time window where the global setting can
+        // be bound into the save. After that, the load-time mismatch warning is
+        // the safer path because real gameplay may already have advanced.
         private const int NewColonySetupGraceTicks = DayConstants.VanillaTicksPerHour;
 
         public float savedTimeMultiplier = 1f;
@@ -24,6 +27,9 @@ namespace DayStretch
         public override void ExposeData()
         {
             base.ExposeData();
+            // Do not persist an open setup window. If the player saves before
+            // binding the multiplier, the next load should use the normal
+            // mismatch warning instead of pretending the save is still pristine.
             if (Scribe.mode == LoadSaveMode.Saving && !setupCompleted)
             {
                 CloseNewColonySetupWindow();
@@ -40,6 +46,8 @@ namespace DayStretch
         }
         public bool CanBindNewColonySetup()
         {
+            // Re-check expiry at the point of use; the settings window can stay
+            // open while the colony ticks forward.
             CloseNewColonySetupWindowIfExpired();
             return !setupCompleted;
         }
@@ -80,6 +88,8 @@ namespace DayStretch
         public override void LoadedGame()
         {
             base.LoadedGame();
+            // An incomplete setup state should never survive a save/load cycle.
+            // Existing saves are handled by the saved-vs-current multiplier check.
             if (!setupCompleted)
             {
                 CloseNewColonySetupWindow();
