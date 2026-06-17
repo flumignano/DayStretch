@@ -63,6 +63,10 @@ namespace DayStretch
             {
                 ApplySettings();
             }
+            // The old "hide mismatch warnings" checkbox undermined the main
+            // safety mechanism for played saves. DayStretch cannot make
+            // mid-campaign multiplier changes safe, so the warning stays
+            // mandatory instead of user-suppressible.
             listingStandard.End();
             base.DoSettingsWindowContents(inRect);
         }
@@ -79,6 +83,9 @@ namespace DayStretch
                 settings.WorkMultiplier = settings.TimeMultiplier;
             }
 
+            // Apply tells the player to restart immediately. Write now so the
+            // startup transpilers on the next launch read the selected multiplier
+            // even if the settings dialog is never closed cleanly.
             WriteSettings();
 
             var comp = Current.Game?.GetComponent<DayStretchGameComp>();
@@ -92,6 +99,9 @@ namespace DayStretch
         }
         private void ShowNewColonySetupPrompt(DayStretchGameComp comp)
         {
+            // This prompt turns the old warning-driven setup into an explicit
+            // fresh-colony workflow: choose multiplier, bind the save marker,
+            // save once, then restart before real play.
             string text = $"DayStretch saved these settings immediately.\n{MultiplierSummary()}\n\n" +
                           $"This setup step is intended for a newly started colony before real play.\n\n" +
                           $"DayStretch will bind this save to day length multiplier {settings.TimeMultiplier:0.0}x.\n\n" +
@@ -107,11 +117,17 @@ namespace DayStretch
                     }
                     else
                     {
+                        // If the colony has ticked past the setup window, fall
+                        // back to the load-time mismatch path. That path is
+                        // intentionally noisy because it may be a played save.
                         Find.WindowStack.Add(new Dialog_MessageBox("This colony is no longer in the new-colony setup window. Restart RimWorld without saving, then load the colony and follow the save mismatch prompt."));
                     }
                 },
                 "Not now", () =>
                 {
+                    // Declining should not leave a half-open setup state that
+                    // can be accidentally bound later. The save will be handled
+                    // by the normal saved-vs-current multiplier check.
                     comp.CancelSetup();
                     Find.WindowStack.Add(new Dialog_MessageBox("Settings were saved globally, but this save was not bound to the new multiplier. Restart RimWorld without saving, then load the colony and follow the save mismatch prompt."));
                 }
@@ -119,6 +135,8 @@ namespace DayStretch
         }
         private void ShowAppliedRestartMessage(bool hasCurrentGame)
         {
+            // Outside the fresh-colony window, Apply only changes global settings
+            // for the next startup. It does not rewrite the current save marker.
             string text = $"DayStretch saved these settings immediately.\n{MultiplierSummary()}\n\n" +
                           $"Restart RimWorld for the settings to load.";
 

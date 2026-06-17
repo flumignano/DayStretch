@@ -441,6 +441,13 @@
 	</AdvancedPatchDef>
 	
 	
+	<!--
+		Result and delta patches are represented here instead of in the old
+		ResultPatchDef.xml and DeltaPatchDef.xml files. The C# ResultPatchDef and
+		DeltaPatchDef Def classes were removed when AdvancedPatchDef became the
+		single patch definition type; keeping the old XML files makes RimWorld
+		report "not a Def type" load errors even though the patches below work.
+	-->
 	<AdvancedPatchDef>
 		<namespaceOf>RimWorld</namespaceOf>
 		<defName>PlantGrowthPatch</defName>

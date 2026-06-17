@@ -20,6 +20,9 @@ namespace DayStretch
         public override void StartedNewGame()
         {
             base.StartedNewGame();
+            // New colonies capture the multiplier that was active at generation
+            // time, but they remain editable for a short setup window because
+            // RimWorld only exposes DayStretch's settings after the map exists.
             savedTimeMultiplier = Settings.Instance.TimeMultiplier;
             setupCompleted = false;
             setupStartTick = Find.TickManager.TicksGame;
@@ -58,6 +61,9 @@ namespace DayStretch
                 return false;
             }
 
+            // Binding the save marker is only safe before real play. From this
+            // point on, LoadedGame compares this value against global settings
+            // to catch accidental mid-campaign multiplier changes.
             savedTimeMultiplier = timeMultiplier;
             setupCompleted = true;
             setupStartTick = -1;
@@ -74,6 +80,9 @@ namespace DayStretch
         }
         private void RestoreSavedMultiplierSetting()
         {
+            // Prefer restoring global settings to the save marker. Many patches
+            // read Settings.Instance on startup, so the player must restart after
+            // this write for the restored multiplier to fully take effect.
             Settings.Instance.TimeMultiplier = savedTimeMultiplier;
             Settings.Instance.FakeTimeMultiplier = savedTimeMultiplier;
             if (!Settings.Instance.ShouldWorkFollow)
@@ -97,6 +106,9 @@ namespace DayStretch
 
             if (savedTimeMultiplier != Settings.Instance.TimeMultiplier)
             {
+                // This warning is deliberately not suppressible. The save marker
+                // records the multiplier DayStretch believes this colony uses;
+                // changing it after play began can reinterpret saved tick state.
                 string text = $"The saved time multiplier for this save is {savedTimeMultiplier}.\n" +
                               $"Your current multiplier is {Settings.Instance.TimeMultiplier}.\n" +
                               $"Continuing with the current multiplier may cause save corruption and many bugs.\n\n" +
@@ -121,6 +133,9 @@ namespace DayStretch
                         text2,
                         "Yes".Translate(), () =>
                         {
+                            // This is the explicit risky override. It exists for
+                            // recovery/testing, not because mid-campaign changes
+                            // are known to be safe.
                             Find.WindowStack.Add(new Dialog_MessageBox("You have been warned."));
                             savedTimeMultiplier = Settings.Instance.TimeMultiplier;
                             setupCompleted = true;
@@ -142,6 +157,8 @@ namespace DayStretch
                 return;
             }
 
+            // Expiry protects against leaving a colony paused in setup mode and
+            // returning later after gameplay or other mods have advanced state.
             int ticksGame = Find.TickManager.TicksGame;
             if (setupStartTick < 0 || ticksGame > setupStartTick + NewColonySetupGraceTicks)
             {
