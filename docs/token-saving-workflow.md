@@ -19,6 +19,12 @@ Use a context pyramid:
 4. After a user test, write a short report using `docs/test-reports/TEMPLATE.md`.
 5. Update `docs/project-state.md` only with compact current facts.
 
+## Enforcement Points
+
+- `AGENTS.md` makes the workflow visible to future Codex agents automatically.
+- `.codex/scripts/Test-Workflow.ps1` checks for missing workflow artifacts and oversized project state.
+- `.github/pull_request_template.md` asks contributors to record scope, verification, documentation, and risk before merge.
+
 ## Agent Rules
 
 - Give agents exact files or line ranges whenever possible.
@@ -43,4 +49,3 @@ Spend context deliberately when:
 - a RimWorld save format or startup lifecycle assumption is being changed
 - the user reports a new runtime error
 - source-code references from RimWorld assemblies are needed to verify behavior
-
