@@ -1,4 +1,4 @@
-# DayStretch Agent Instructions
+# Codex Agent Instructions
 
 These instructions apply to the whole repository.
 
